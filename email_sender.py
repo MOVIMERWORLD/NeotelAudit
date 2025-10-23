@@ -46,63 +46,48 @@ class EmailSender:
             # Asunto
             subject = f"🔍 Cambios en Neotel - {report_date.strftime('%d/%m/%Y')} ({total_changes} cambios)"
             
-            # Cuerpo del email en texto plano
-            body = f"""
-    ╔════════════════════════════════════════════════════════════════╗
-    ║          REPORTE DE CAMBIOS - CONFIGURACIÓN NEOTEL            ║
-    ╚════════════════════════════════════════════════════════════════╝
-
-    📅 Fecha: {report_date.strftime('%d/%m/%Y')}
-    🕐 Generado: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
-
-    ════════════════════════════════════════════════════════════════
-
-    📊 RESUMEN EJECUTIVO
-    ════════════════════════════════════════════════════════════════
-
-    🔢 TOTAL DE CAMBIOS: {total_changes}
-
-    📞 Extensiones: {total_ext} cambios
-        ✅ Añadidas:    {len(changes.get('extensions_added', []))}
-        ❌ Eliminadas:  {len(changes.get('extensions_removed', []))}
-        🔄 Modificadas: {len(changes.get('extensions_modified', []))}
-
-    📱 DIDs: {total_dids} cambios
-        ✅ Añadidos:    {len(changes.get('dids_added', []))}
-        ❌ Eliminados:  {len(changes.get('dids_removed', []))}
-        🔄 Modificados: {len(changes.get('dids_modified', []))}
-
-    📋 Colas: {total_colas} cambios
-        ✅ Añadidas:    {len(changes.get('colas_added', []))}
-        ❌ Eliminadas:  {len(changes.get('colas_removed', []))}
-        🔄 Modificadas: {len(changes.get('colas_modified', []))}
-
-    ════════════════════════════════════════════════════════════════
-
-    🔗 REPORTE COMPLETO
-    ════════════════════════════════════════════════════════════════
-
-    Para ver el detalle completo de todos los cambios, abre el archivo
-    adjunto en tu navegador web.
-
-    ════════════════════════════════════════════════════════════════
-
-    Este es un reporte automático del Sistema de Auditoría Neotel.
-    Para consultas, contacta al equipo de IT.
-
-    ════════════════════════════════════════════════════════════════
-    """
+            # Cuerpo del email en texto plano (resumen)
+            body_text = self._create_text_summary(changes, report_date, total_changes)
+            
+            # Construir mensaje MIME multipart (texto + attachment)
+            msg = MIMEMultipart()
+            msg['Subject'] = subject
+            msg['From'] = f"{self.config.get('from_name')} <{self.config.get('from_email')}>"
+            msg['To'] = ', '.join(self.config.get('recipients', []))
+            
+            # Attach plain text summary
+            msg.attach(MIMEText(body_text, 'plain', 'utf-8'))
+            
+            # Adjuntar el archivo de reporte si existe
+            try:
+                report_path = Path(report_file) if report_file else None
+                if report_path and report_path.exists():
+                    with open(report_path, 'rb') as f:
+                        part = MIMEBase('application', 'octet-stream')
+                        part.set_payload(f.read())
+                    encoders.encode_base64(part)
+                    part.add_header('Content-Disposition', f'attachment; filename="{report_path.name}"')
+                    msg.attach(part)
+                else:
+                    self.logger.warning(f"⚠️  Report file no encontrado o no especificado: {report_file}")
+            except Exception as e:
+                self.logger.warning(f"⚠️  No se pudo adjuntar el reporte: {str(e)}")
             
             # Enviar email
-            if self._send_email(subject, body, [report_file]):
-                print(f"✅ Email de cambios enviado con {total_changes} cambios detectados")
-                return True
-            else:
-                print(f"❌ Error enviando email de cambios")
+            try:
+                sent = self._send_email(msg)
+                if sent:
+                    self.logger.info(f"✅ Email de cambios enviado con {total_changes} cambios detectados")
+                    return True
+                else:
+                    self.logger.error("❌ Error enviando email de cambios (envío no confirmado)")
+                    return False
+            except Exception as e:
+                self.logger.error(f"❌ Error enviando email de cambios: {str(e)}")
                 return False
                 
         except Exception as e:
-            print(f"❌ Error preparando email de cambios: {str(e)}")
+            self.logger.error(f"❌ Error preparando email de cambios: {str(e)}")
             return False
     
     def send_no_changes_notification(self, report_date):
@@ -148,18 +133,21 @@ class EmailSender:
             
             msg = MIMEMultipart('alternative')
             msg['Subject'] = subject
-            msg['From'] = f"{self.config['from_name']} <{self.config['from_email']}>"
-            msg['To'] = ', '.join(self.config['recipients'])
+            msg['From'] = f"{self.config.get('from_name')} <{self.config.get('from_email')}>"
+            msg['To'] = ', '.join(self.config.get('recipients', []))
             
             msg.attach(MIMEText(body, 'html', 'utf-8'))
             
-            self._send_email(msg)
-            
-            self.logger.info("✅ Notificación de 'sin cambios' enviada")
-            return True
+            try:
+                self._send_email(msg)
+                self.logger.info("✅ Notificación de 'sin cambios' enviada")
+                return True
+            except Exception as e:
+                self.logger.error(f"❌ Error enviando notificación de 'sin cambios': {str(e)}")
+                return False
             
         except Exception as e:
-            self.logger.error(f"❌ Error enviando notificación: {str(e)}")
+            self.logger.error(f"❌ Error preparando notificación de 'sin cambios': {str(e)}")
             return False
     
     def send_error_notification(self, error_message, error_details=None):
@@ -172,6 +160,15 @@ class EmailSender:
         """
         try:
             subject = f"🔴 ERROR - Auditor Neotel - {datetime.now().strftime('%d/%m/%Y %H:%M')}"
+            
+            details_html = ""
+            if error_details:
+                details_html = f"""
+                <div style="background: #f5f5f5; padding: 15px; margin: 20px 0;">
+                    <h3 style="margin-top: 0;">Detalles:</h3>
+                    <pre style="background: white; padding: 10px; overflow-x: auto;">{error_details}</pre>
+                </div>
+                """
             
             body = f"""
             <html>
@@ -187,7 +184,7 @@ class EmailSender:
                     <pre style="background: white; padding: 10px; overflow-x: auto;">{error_message}</pre>
                 </div>
                 
-                {f'<div style="background: #f5f5f5; padding: 15px; margin: 20px 0;"><h3 style="margin-top: 0;">Detalles:</h3><pre style="background: white; padding: 10px; overflow-x: auto;">{error_details}</pre></div>' if error_details else ''}
+                {details_html}
                 
                 <p><strong>Acción requerida:</strong> Revisar logs y verificar configuración del auditor.</p>
                 
@@ -202,18 +199,21 @@ class EmailSender:
             
             msg = MIMEMultipart('alternative')
             msg['Subject'] = subject
-            msg['From'] = f"{self.config['from_name']} <{self.config['from_email']}>"
-            msg['To'] = ', '.join(self.config['recipients_errors'])
+            msg['From'] = f"{self.config.get('from_name')} <{self.config.get('from_email')}>"
+            msg['To'] = ', '.join(self.config.get('recipients_errors', []))
             
             msg.attach(MIMEText(body, 'html', 'utf-8'))
             
-            self._send_email(msg)
-            
-            self.logger.info("✅ Notificación de error enviada a equipo técnico")
-            return True
+            try:
+                self._send_email(msg)
+                self.logger.info("✅ Notificación de error enviada a equipo técnico")
+                return True
+            except Exception as e:
+                self.logger.error(f"❌ Error enviando notificación de error: {str(e)}")
+                return False
             
         except Exception as e:
-            self.logger.error(f"❌ Error enviando notificación de error: {str(e)}")
+            self.logger.error(f"❌ Error preparando notificación de error: {str(e)}")
             return False
     
     def _create_text_summary(self, changes_summary, report_date, total_changes):
@@ -276,6 +276,7 @@ class EmailSender:
                 server.send_message(msg)
                 
             self.logger.info(f"📧 Email enviado exitosamente")
+            return True
             
         except smtplib.SMTPAuthenticationError:
             self.logger.error("❌ Error de autenticación SMTP - Verifica usuario y contraseña")
