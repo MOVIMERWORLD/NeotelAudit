@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Configuración para el Auditor de Configuración Neotel
+Configuración para el Auditor de Configuración Neotel Prueba
 """
 
 import os
