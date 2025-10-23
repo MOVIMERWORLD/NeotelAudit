@@ -1,0 +1,133 @@
+{
+  "extensiones": [
+    {
+      "extension": "4717-100",
+      "nombre": "LIBRE",
+      "grupo": "",
+      "numero_saliente": "",
+      "accion": "Ver Reanudar en todas las colas Pausar en todas las colas"
+    },
+    {
+      "extension": "4717-101",
+      "nombre": "Leticia Sediles",
+      "grupo": "",
+      "numero_saliente": "34722705650",
+      "accion": "Ver Reanudar en todas las colas Pausar en todas las colas"
+    },
+    {
+      "extension": "4717-102",
+      "nombre": "Veronica Yagüez",
+      "grupo": "",
+      "numero_saliente": "34722705650",
+      "accion": "Ver Reanudar en todas las colas Pausar en todas las colas"
+    },
+    {
+      "extension": "4717-103",
+      "nombre": "Laura Vilamajó (Zoiper NO TOCAR)",
+      "grupo": "",
+      "numero_saliente": "",
+      "accion": "Ver Reanudar en todas las colas Pausar en todas las colas"
+    },
+    {
+      "extension": "4717-104",
+      "nombre": "Raquel Vega",
+      "grupo": "",
+      "numero_saliente": "34722705650",
+      "accion": "Ver Reanudar en todas las colas Pausar en todas las colas"
+    }
+  ],
+  "dids": [
+    {
+      "numero": "5152",
+      "locucion": "Por extraer...",
+      "accion1": "Por extraer..."
+    },
+    {
+      "numero": "5497",
+      "locucion": "Por extraer...",
+      "accion1": "Por extraer..."
+    },
+    {
+      "numero": "5500",
+      "locucion": "Por extraer...",
+      "accion1": "Por extraer..."
+    },
+    {
+      "numero": "5501",
+      "locucion": "Por extraer...",
+      "accion1": "Por extraer..."
+    },
+    {
+      "numero": "5502",
+      "locucion": "Por extraer...",
+      "accion1": "Por extraer..."
+    },
+    {
+      "numero": "5503",
+      "locucion": "Por extraer...",
+      "accion1": "Por extraer..."
+    },
+    {
+      "numero": "5512",
+      "locucion": "Por extraer...",
+      "accion1": "Por extraer..."
+    },
+    {
+      "numero": "5513",
+      "locucion": "Por extraer...",
+      "accion1": "Por extraer..."
+    },
+    {
+      "numero": "5514",
+      "locucion": "Por extraer...",
+      "accion1": "Por extraer..."
+    },
+    {
+      "numero": "5517",
+      "locucion": "Por extraer...",
+      "accion1": "Por extraer..."
+    }
+  ],
+  "colas": [
+    {
+      "nombre": "pre_MASARO_ABOGADOS",
+      "miembros": []
+    },
+    {
+      "nombre": "pre_LLEIDANET",
+      "miembros": []
+    },
+    {
+      "nombre": "pre_PAMPLONA_CAR",
+      "miembros": []
+    },
+    {
+      "nombre": "pre_TUDELA_CAR_FORD",
+      "miembros": []
+    },
+    {
+      "nombre": "pre_ZGZ",
+      "miembros": []
+    },
+    {
+      "nombre": "pre_JAPAND_21",
+      "miembros": []
+    },
+    {
+      "nombre": "pre_PSA_RETAIL_BARCELONA_BADAL",
+      "miembros": []
+    },
+    {
+      "nombre": "pre_PSA_RETAIL_BCN_GUIPUZCOA",
+      "miembros": []
+    },
+    {
+      "nombre": "pre_PSA_RETAIL_SAN_BOI",
+      "miembros": []
+    },
+    {
+      "nombre": "pre_CADIMAR_CADIZ",
+      "miembros": []
+    }
+  ]
+}
